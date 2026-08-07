@@ -1,0 +1,12 @@
+{
+  "name": "lostfound",
+  "version": "1.0.0",
+  "description": "A full-stack web app that lets KNUST students report lost items, report found items, search existing reports, submit claims, and track recovery — with an admin dashboard to review claims and moderate reports. Built as a 10-day project following the accompanying project proposal (`KNUST_Lost_and_Found_Proposal.docx`).",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

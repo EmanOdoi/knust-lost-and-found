@@ -1,0 +1,8 @@
+node_modules/
+.env
+lostfound.db
+lostfound.db-journal
+lostfound.db-wal
+lostfound.db-shm
+uploads/*
+!uploads/.gitkeep

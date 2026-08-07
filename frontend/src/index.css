@@ -1,0 +1,64 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    @apply font-body text-ink;
+  }
+  body {
+    @apply bg-parchment;
+  }
+  h1, h2, h3, h4 {
+    @apply font-display;
+  }
+}
+
+@layer components {
+  /* Ticket-stub card: echoes a physical lost-and-found claim tag */
+  .ticket {
+    @apply relative bg-white border border-line rounded-sm shadow-sm overflow-hidden transition
+           hover:shadow-md hover:-translate-y-0.5;
+  }
+
+  .ticket-perforation {
+    background-image: radial-gradient(circle, #F6F4EE 2.5px, transparent 2.5px);
+    background-size: 12px 12px;
+    background-position: center;
+  }
+
+  .stamp {
+    @apply inline-block font-display text-xs font-bold uppercase tracking-widest
+           px-2.5 py-1 border-2 rounded-sm -rotate-3 select-none;
+  }
+
+  .stamp-lost {
+    @apply stamp border-brass text-brass bg-brass-50;
+  }
+  .stamp-found {
+    @apply stamp border-forest text-forest bg-forest-50;
+  }
+  .stamp-recovered {
+    @apply stamp border-ink/40 text-ink/50 bg-black/[0.02];
+  }
+
+  .btn-primary {
+    @apply bg-forest text-white font-medium px-4 py-2 rounded-sm hover:bg-forest-deep transition
+           disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+  .btn-secondary {
+    @apply bg-white text-forest font-medium px-4 py-2 rounded-sm border border-forest
+           hover:bg-forest-50 transition;
+  }
+  .btn-danger {
+    @apply text-red-700 font-medium px-3 py-1.5 rounded-sm border border-red-200 hover:bg-red-50 transition text-sm;
+  }
+
+  .field-label {
+    @apply block text-sm font-medium text-ink/80 mb-1;
+  }
+  .field-input {
+    @apply w-full border border-line rounded-sm px-3 py-2 bg-white focus:outline-none
+           focus:ring-2 focus:ring-forest/40 focus:border-forest transition;
+  }
+}
