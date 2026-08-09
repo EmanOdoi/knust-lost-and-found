@@ -1,11 +1,14 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 import api from "../lib/api";
+import { useToast } from "../context/ToastContext";
 
 const CATEGORIES = ["Electronics", "Documents", "Accessories", "Bags", "Books", "Keys", "Clothing", "Other"];
 
 export default function ReportItem() {
   const navigate = useNavigate();
+  const { notify } = useToast();
   const [status, setStatus] = useState("Lost");
   const [form, setForm] = useState({
     title: "",
@@ -31,6 +34,7 @@ export default function ReportItem() {
       const res = await api.post("/items", data, {
         headers: { "Content-Type": "multipart/form-data" },
       });
+      notify(`${status} report submitted`, "success");
       navigate(`/items/${res.data.item.item_id}`);
     } catch (err) {
       setError(err.message);
@@ -40,7 +44,12 @@ export default function ReportItem() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-12">
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.35 }}
+      className="max-w-2xl mx-auto px-4 py-12"
+    >
       <h1 className="text-2xl font-bold text-ink mb-1">Report an item</h1>
       <p className="text-ink/60 mb-8">
         Fill in as much detail as you can — specific, identifying details help the right person find this report.
@@ -48,7 +57,8 @@ export default function ReportItem() {
 
       {/* Lost / Found toggle */}
       <div className="flex gap-2 mb-6">
-        <button
+        <motion.button
+          whileTap={{ scale: 0.97 }}
           type="button"
           onClick={() => setStatus("Lost")}
           className={`flex-1 py-3 rounded-sm border font-display font-semibold transition ${
@@ -56,8 +66,9 @@ export default function ReportItem() {
           }`}
         >
           I lost something
-        </button>
-        <button
+        </motion.button>
+        <motion.button
+          whileTap={{ scale: 0.97 }}
           type="button"
           onClick={() => setStatus("Found")}
           className={`flex-1 py-3 rounded-sm border font-display font-semibold transition ${
@@ -65,7 +76,7 @@ export default function ReportItem() {
           }`}
         >
           I found something
-        </button>
+        </motion.button>
       </div>
 
       <form onSubmit={handleSubmit} className="ticket p-6 space-y-4">
@@ -148,6 +159,6 @@ export default function ReportItem() {
           {busy ? "Submitting…" : `Submit ${status.toLowerCase()} report`}
         </button>
       </form>
-    </div>
+    </motion.div>
   );
 }

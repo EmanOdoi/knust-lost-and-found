@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
+import { motion } from "framer-motion";
 import { useAuth } from "../context/AuthContext";
 
 export default function Login() {
@@ -29,7 +30,13 @@ export default function Login() {
       <h1 className="text-2xl font-bold text-ink mb-1">Welcome back</h1>
       <p className="text-ink/60 mb-8">Log in to report or search for items.</p>
 
-      <form onSubmit={handleSubmit} className="ticket p-6 space-y-4">
+      <motion.form
+        initial={{ opacity: 0, y: 14 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.35 }}
+        onSubmit={handleSubmit}
+        className="ticket p-6 space-y-4"
+      >
         {error && (
           <div className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-sm px-3 py-2">
             {error}
@@ -60,7 +67,7 @@ export default function Login() {
         <button type="submit" disabled={busy} className="btn-primary w-full">
           {busy ? "Logging in…" : "Log in"}
         </button>
-      </form>
+      </motion.form>
 
       <p className="text-sm text-ink/60 mt-6 text-center">
         Don't have an account?{" "}

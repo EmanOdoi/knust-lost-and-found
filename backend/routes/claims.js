@@ -1,6 +1,7 @@
 const express = require("express");
 const db = require("../db");
 const { requireAuth, requireAdmin } = require("../middleware/auth");
+const { sendMail, claimSubmittedEmail, claimApprovedEmail, claimRejectedEmail } = require("../lib/mail");
 
 const router = express.Router();
 
@@ -32,6 +33,22 @@ router.post("/", requireAuth, (req, res) => {
     .run(item_id, req.user.user_id, message.trim());
 
   const claim = db.prepare("SELECT * FROM claims WHERE claim_id = ?").get(info.lastInsertRowid);
+
+  // Notify the item's reporter — never let a mail failure affect the response
+  const owner = db.prepare("SELECT name, email FROM users WHERE user_id = ?").get(item.owner_id);
+  if (owner) {
+    sendMail({
+      to: owner.email,
+      subject: `New claim on "${item.title}"`,
+      html: claimSubmittedEmail({
+        ownerName: owner.name,
+        itemTitle: item.title,
+        claimantName: req.user.name,
+        message: message.trim(),
+      }),
+    });
+  }
+
   res.status(201).json({ claim });
 });
 
@@ -104,6 +121,20 @@ router.patch("/:id", requireAuth, requireAdmin, (req, res) => {
     }
   });
   txn();
+
+  // Notify the claimant of the outcome
+  const claimant = db.prepare("SELECT name, email FROM users WHERE user_id = ?").get(claim.user_id);
+  const item = db.prepare("SELECT title FROM items WHERE item_id = ?").get(claim.item_id);
+  if (claimant && item) {
+    sendMail({
+      to: claimant.email,
+      subject: status === "Approved" ? `Your claim on "${item.title}" was approved` : `Update on your claim for "${item.title}"`,
+      html:
+        status === "Approved"
+          ? claimApprovedEmail({ claimantName: claimant.name, itemTitle: item.title })
+          : claimRejectedEmail({ claimantName: claimant.name, itemTitle: item.title }),
+    });
+  }
 
   const updated = db.prepare("SELECT * FROM claims WHERE claim_id = ?").get(req.params.id);
   res.json({ claim: updated });

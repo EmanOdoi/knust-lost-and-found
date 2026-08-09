@@ -44,14 +44,14 @@
 
   .btn-primary {
     @apply bg-forest text-white font-medium px-4 py-2 rounded-sm hover:bg-forest-deep transition
-           disabled:opacity-50 disabled:cursor-not-allowed;
+           disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.97];
   }
   .btn-secondary {
     @apply bg-white text-forest font-medium px-4 py-2 rounded-sm border border-forest
-           hover:bg-forest-50 transition;
+           hover:bg-forest-50 transition active:scale-[0.97];
   }
   .btn-danger {
-    @apply text-red-700 font-medium px-3 py-1.5 rounded-sm border border-red-200 hover:bg-red-50 transition text-sm;
+    @apply text-red-700 font-medium px-3 py-1.5 rounded-sm border border-red-200 hover:bg-red-50 transition text-sm active:scale-[0.97];
   }
 
   .field-label {

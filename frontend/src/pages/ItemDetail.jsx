@@ -2,12 +2,14 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import api, { resolveImage } from "../lib/api";
 import { useAuth } from "../context/AuthContext";
+import { useToast } from "../context/ToastContext";
 import StatusStamp from "../components/StatusStamp";
 
 export default function ItemDetail() {
   const { id } = useParams();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { notify } = useToast();
 
   const [item, setItem] = useState(null);
   const [claims, setClaims] = useState([]);
@@ -43,6 +45,7 @@ export default function ItemDetail() {
     try {
       await api.post("/claims", { item_id: item.item_id, message });
       setClaimSuccess("Your claim was submitted. An admin will review it shortly.");
+      notify("Claim submitted", "success");
       setMessage("");
     } catch (err) {
       setClaimError(err.message);
@@ -54,6 +57,7 @@ export default function ItemDetail() {
   async function handleDelete() {
     if (!confirm("Remove this report? This cannot be undone.")) return;
     await api.delete(`/items/${item.item_id}`);
+    notify("Report removed", "info");
     navigate("/");
   }
 
