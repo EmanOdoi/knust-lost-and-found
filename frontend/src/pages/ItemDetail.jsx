@@ -4,6 +4,7 @@ import api, { resolveImage } from "../lib/api";
 import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
 import StatusStamp from "../components/StatusStamp";
+import CategoryIcon from "../components/CategoryIcon";
 
 export default function ItemDetail() {
   const { id } = useParams();
@@ -74,10 +75,13 @@ export default function ItemDetail() {
         )}
         <div className="p-6 flex-1">
           <div className="flex items-start justify-between gap-3">
-            <h1 className="font-display text-2xl font-bold text-ink">{item.title}</h1>
+            <h1 className="font-display text-2xl font-bold text-ink min-w-0 break-words">{item.title}</h1>
             <StatusStamp status={item.status} />
           </div>
-          <p className="text-ink/60 mt-1">{item.category} &middot; {item.location} &middot; {item.date}</p>
+          <p className="text-ink/60 mt-1 flex items-center gap-1.5 min-w-0">
+            <CategoryIcon category={item.category} className="w-4 h-4 text-forest/70 shrink-0" />
+            <span className="truncate">{item.category} &middot; {item.location} &middot; {item.date}</span>
+          </p>
           <p className="text-ink/80 mt-4 leading-relaxed">{item.description}</p>
           <p className="text-sm text-ink/40 mt-4 font-mono">
             Reported by {item.owner_name}{isOwner ? " (you)" : ""} &middot; Ticket #{String(item.item_id).padStart(4, "0")}

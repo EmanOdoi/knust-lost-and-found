@@ -1,12 +1,14 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import StatusStamp from "./StatusStamp";
+import CategoryIcon from "./CategoryIcon";
 import { resolveImage } from "../lib/api";
 
 export default function ItemCard({ item }) {
   return (
     <motion.div
       layout
+      className="min-w-0"
       initial={{ opacity: 0, y: 14 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -8 }}
@@ -15,7 +17,11 @@ export default function ItemCard({ item }) {
     >
       <Link to={`/items/${item.item_id}`} className="ticket flex group">
         {/* stub */}
-        <div className="w-24 sm:w-28 shrink-0 bg-parchment border-r border-dashed border-line flex flex-col items-center justify-center gap-2 py-4 px-2">
+        <div className="relative w-24 sm:w-28 shrink-0 bg-parchment border-r border-dashed border-line flex flex-col items-center justify-center gap-2 py-4 px-2 overflow-hidden">
+          <CategoryIcon
+            category={item.category}
+            className="absolute -bottom-2 -right-2 w-14 h-14 text-ink/[0.05] rotate-[-8deg]"
+          />
           <motion.div whileHover={{ rotate: [0, -8, 4, -3, 0] }} transition={{ duration: 0.5 }}>
             <StatusStamp status={item.status} />
           </motion.div>
@@ -31,13 +37,14 @@ export default function ItemCard({ item }) {
         {/* content */}
         <div className="flex-1 p-4 min-w-0">
           <div className="flex items-start justify-between gap-3">
-            <h3 className="font-display font-semibold text-ink text-lg leading-snug group-hover:text-forest transition truncate">
+            <h3 className="font-display font-semibold text-ink text-lg leading-snug group-hover:text-forest transition truncate min-w-0">
               {item.title}
             </h3>
             <span className="text-xs font-mono text-ink/40 whitespace-nowrap pt-1">{item.date}</span>
           </div>
-          <p className="text-sm text-ink/60 mt-1">
-            {item.category} &middot; {item.location}
+          <p className="text-sm text-ink/60 mt-1 flex items-center gap-1.5 min-w-0">
+            <CategoryIcon category={item.category} className="w-3.5 h-3.5 text-forest/70 shrink-0" />
+            <span className="truncate">{item.category} &middot; {item.location}</span>
           </p>
           <p className="text-sm text-ink/70 mt-2 line-clamp-2">{item.description}</p>
         </div>

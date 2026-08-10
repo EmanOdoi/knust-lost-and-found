@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
+import { PackageX, PackageCheck, PackageOpen, Clock, Users } from "lucide-react";
 import api from "../lib/api";
 import StatusStamp from "../components/StatusStamp";
 import { useToast } from "../context/ToastContext";
@@ -78,11 +79,11 @@ export default function AdminDashboard() {
       {tab === "overview" && stats && (
         <div>
           <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 mb-8">
-            <StatCard label="Lost" value={stats.totalLost} accent="brass" />
-            <StatCard label="Found" value={stats.totalFound} accent="forest" />
-            <StatCard label="Recovered" value={stats.totalRecovered} accent="ink" />
-            <StatCard label="Pending claims" value={stats.pendingClaims} accent="brass" />
-            <StatCard label="Students" value={stats.totalUsers} accent="ink" />
+            <StatCard label="Lost" value={stats.totalLost} accent="brass" icon={PackageX} />
+            <StatCard label="Found" value={stats.totalFound} accent="forest" icon={PackageOpen} />
+            <StatCard label="Recovered" value={stats.totalRecovered} accent="ink" icon={PackageCheck} />
+            <StatCard label="Pending claims" value={stats.pendingClaims} accent="brass" icon={Clock} />
+            <StatCard label="Students" value={stats.totalUsers} accent="ink" icon={Users} />
           </div>
 
           <h2 className="font-display font-semibold text-lg mb-3">Reports by category</h2>
@@ -174,10 +175,11 @@ export default function AdminDashboard() {
   );
 }
 
-function StatCard({ label, value, accent }) {
+function StatCard({ label, value, accent, icon: Icon }) {
   const accentCls = accent === "brass" ? "text-brass" : accent === "forest" ? "text-forest" : "text-ink";
   return (
-    <div className="ticket p-4 text-center">
+    <div className="ticket p-4 text-center relative overflow-hidden">
+      {Icon && <Icon className={`absolute -right-2 -bottom-2 w-14 h-14 opacity-[0.06] ${accentCls}`} strokeWidth={1.5} />}
       <p className={`font-display font-bold text-3xl ${accentCls}`}>
         <CountUp to={value} />
       </p>

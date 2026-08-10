@@ -164,21 +164,31 @@ function SkeletonList() {
 
 // Purely decorative — drifting tag/ring shapes using only the existing
 // forest/brass/white palette at low opacity, echoing lost-item tags.
+// Kept well inside the container (no edge-hugging placement) so transform-based
+// motion never risks contributing to horizontal scroll on any browser.
 function FloatingShapes() {
   const shapes = [
-    { size: 90, top: "10%", left: "78%", duration: 9, color: "rgba(201,138,44,0.18)" },
-    { size: 50, top: "60%", left: "88%", duration: 7, color: "rgba(255,255,255,0.12)" },
-    { size: 130, top: "55%", left: "70%", duration: 11, color: "rgba(255,255,255,0.06)" },
-    { size: 36, top: "20%", left: "92%", duration: 6, color: "rgba(201,138,44,0.25)" },
+    { size: 80, top: "12%", left: "72%", duration: 9, color: "rgba(201,138,44,0.16)" },
+    { size: 44, top: "58%", left: "84%", duration: 7, color: "rgba(255,255,255,0.10)" },
+    { size: 110, top: "50%", left: "64%", duration: 11, color: "rgba(255,255,255,0.05)" },
+    { size: 30, top: "22%", left: "88%", duration: 6, color: "rgba(201,138,44,0.22)" },
   ];
   return (
     <div className="absolute inset-0 pointer-events-none overflow-hidden" aria-hidden="true">
+      {/* subtle dot-grid texture for depth, still just brass/white at low opacity */}
+      <div
+        className="absolute inset-0 opacity-[0.07]"
+        style={{
+          backgroundImage: "radial-gradient(circle, #ffffff 1px, transparent 1px)",
+          backgroundSize: "22px 22px",
+        }}
+      />
       {shapes.map((s, i) => (
         <motion.div
           key={i}
           className="absolute rounded-full"
           style={{ width: s.size, height: s.size, top: s.top, left: s.left, background: s.color }}
-          animate={{ y: [0, -18, 0], x: [0, 8, 0] }}
+          animate={{ y: [0, -14, 0], x: [0, 6, 0] }}
           transition={{ duration: s.duration, repeat: Infinity, ease: "easeInOut" }}
         />
       ))}
