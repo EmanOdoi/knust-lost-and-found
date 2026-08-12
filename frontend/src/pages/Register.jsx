@@ -57,7 +57,7 @@ export default function Register() {
             type="email"
             required
             className="field-input"
-            placeholder="you@knust.edu.gh"
+            placeholder="Enter your email address"
             value={form.email}
             onChange={(e) => setForm({ ...form, email: e.target.value })}
           />

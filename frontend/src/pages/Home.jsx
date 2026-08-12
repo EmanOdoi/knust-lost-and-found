@@ -12,14 +12,14 @@ export default function Home() {
   const [category, setCategory] = useState("");
   const [status, setStatus] = useState("");
 
-  async function fetchItems(e) {
-    e?.preventDefault();
+  async function fetchItems(filters = {}) {
+    const activeFilters = { query, category, status, ...filters };
     setLoading(true);
     try {
       const params = {};
-      if (query) params.query = query;
-      if (category) params.category = category;
-      if (status) params.status = status;
+      if (activeFilters.query) params.query = activeFilters.query;
+      if (activeFilters.category) params.category = activeFilters.category;
+      if (activeFilters.status) params.status = activeFilters.status;
       const res = await api.get("/items", { params });
       setItems(res.data.items);
     } finally {
@@ -31,6 +31,30 @@ export default function Home() {
     fetchItems();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  function handleSearch(e) {
+    e.preventDefault();
+    fetchItems();
+  }
+
+  function handleCategoryChange(e) {
+    const nextCategory = e.target.value;
+    setCategory(nextCategory);
+    fetchItems({ category: nextCategory });
+  }
+
+  function handleStatusChange(e) {
+    const nextStatus = e.target.value;
+    setStatus(nextStatus);
+    fetchItems({ status: nextStatus });
+  }
+
+  function clearFilters() {
+    setQuery("");
+    setCategory("");
+    setStatus("");
+    fetchItems({ query: "", category: "", status: "" });
+  }
 
   return (
     <div>
@@ -62,7 +86,7 @@ export default function Home() {
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
-            onSubmit={fetchItems}
+            onSubmit={handleSearch}
             className="mt-8 bg-white rounded-sm shadow-lg p-2 flex flex-col sm:flex-row gap-2 max-w-2xl"
           >
             <input
@@ -80,10 +104,10 @@ export default function Home() {
 
       {/* filters + results */}
       <section className="max-w-6xl mx-auto px-4 sm:px-6 py-10">
-        <form onSubmit={fetchItems} className="flex flex-wrap gap-3 mb-6 items-end">
+        <div className="flex flex-wrap gap-3 mb-6 items-end">
           <div>
             <label className="field-label">Category</label>
-            <select className="field-input" value={category} onChange={(e) => setCategory(e.target.value)}>
+            <select className="field-input" value={category} onChange={handleCategoryChange}>
               <option value="">All categories</option>
               {CATEGORIES.map((c) => (
                 <option key={c} value={c}>{c}</option>
@@ -92,26 +116,23 @@ export default function Home() {
           </div>
           <div>
             <label className="field-label">Status</label>
-            <select className="field-input" value={status} onChange={(e) => setStatus(e.target.value)}>
+            <select className="field-input" value={status} onChange={handleStatusChange}>
               <option value="">Lost &amp; Found</option>
               <option value="Lost">Lost</option>
               <option value="Found">Found</option>
               <option value="Recovered">Recovered</option>
             </select>
           </div>
-          <motion.button whileTap={{ scale: 0.96 }} type="submit" className="btn-secondary">
-            Apply filters
-          </motion.button>
           {(query || category || status) && (
             <button
               type="button"
               className="text-sm text-ink/50 hover:text-ink underline"
-              onClick={() => { setQuery(""); setCategory(""); setStatus(""); setTimeout(fetchItems, 0); }}
+              onClick={clearFilters}
             >
               Clear
             </button>
           )}
-        </form>
+        </div>
 
         {loading ? (
           <SkeletonList />

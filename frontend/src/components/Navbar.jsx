@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useAuth } from "../context/AuthContext";
 
@@ -14,6 +14,7 @@ function NavLink({ to, children }) {
 export default function Navbar() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
   function handleLogout() {
     logout();
@@ -21,7 +22,8 @@ export default function Navbar() {
   }
 
   return (
-    <header className="bg-forest text-white sticky top-0 z-30 shadow-sm">
+    <>
+      <header className="bg-forest text-white sticky top-0 z-30 shadow-sm">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
         <Link to="/" className="flex items-center gap-2 font-display font-bold text-lg tracking-tight">
           <motion.svg
@@ -63,15 +65,76 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* mobile nav */}
+      </header>
+
       {user && (
-        <div className="sm:hidden flex items-center gap-4 px-4 pb-3 text-sm font-medium">
-          <Link to="/" className="hover:text-brass-50">Browse</Link>
-          <Link to="/report" className="hover:text-brass-50">Report</Link>
-          <Link to="/my-reports" className="hover:text-brass-50">Mine</Link>
-          {user?.role === "admin" && <Link to="/admin" className="hover:text-brass-50">Admin</Link>}
-        </div>
+        <nav className="sm:hidden fixed inset-x-0 bottom-0 z-40 grid grid-cols-3 border-t border-line bg-white/95 px-3 py-2 shadow-lg backdrop-blur">
+          <BottomNavButton to="/" active={location.pathname === "/"} icon="browse">Browse</BottomNavButton>
+          <BottomNavButton to="/report" active={location.pathname === "/report"} icon="report">Report</BottomNavButton>
+          <BottomNavButton to="/my-reports" active={location.pathname === "/my-reports"} icon="mine">Mine</BottomNavButton>
+        </nav>
       )}
-    </header>
+    </>
+  );
+}
+
+function BottomNavButton({ to, active, icon, children }) {
+  return (
+    <Link
+      to={to}
+      aria-current={active ? "page" : undefined}
+      className={`relative flex flex-col items-center justify-center gap-1 px-3 py-2 text-xs font-semibold transition ${
+        active ? "text-forest" : "text-ink/60 hover:text-ink"
+      }`}
+    >
+      <BottomNavIcon name={icon} />
+      {children}
+      {active && (
+        <motion.span
+          layoutId="bottom-nav-indicator"
+          className="absolute -bottom-2 h-0.5 w-9 rounded-full bg-brass"
+          transition={{ type: "spring", stiffness: 420, damping: 32 }}
+        />
+      )}
+    </Link>
+  );
+}
+
+function BottomNavIcon({ name }) {
+  const commonProps = {
+    width: 22,
+    height: 22,
+    viewBox: "0 0 24 24",
+    fill: "none",
+    stroke: "currentColor",
+    strokeWidth: 1.8,
+    strokeLinecap: "round",
+    strokeLinejoin: "round",
+    "aria-hidden": true,
+  };
+
+  if (name === "report") {
+    return (
+      <svg {...commonProps}>
+        <path d="M6 3h9l3 3v15H6z" />
+        <path d="M15 3v4h4M9 12h6M9 16h6" />
+      </svg>
+    );
+  }
+
+  if (name === "mine") {
+    return (
+      <svg {...commonProps}>
+        <circle cx="12" cy="8" r="3.5" />
+        <path d="M5 21a7 7 0 0 1 14 0" />
+      </svg>
+    );
+  }
+
+  return (
+    <svg {...commonProps}>
+      <circle cx="11" cy="11" r="6.5" />
+      <path d="m16 16 4 4" />
+    </svg>
   );
 }

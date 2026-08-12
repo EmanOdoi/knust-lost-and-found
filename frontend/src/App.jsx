@@ -11,7 +11,7 @@ import { RequireAuth, RequireAdmin } from "./components/RouteGuards";
 
 export default function App() {
   return (
-    <div className="min-h-screen flex flex-col bg-parchment">
+    <div className="min-h-screen flex flex-col bg-parchment pb-20 sm:pb-0">
       <Navbar />
       <main className="flex-1">
         <Routes>

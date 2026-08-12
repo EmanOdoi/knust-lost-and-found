@@ -48,7 +48,7 @@ export default function Login() {
             type="email"
             required
             className="field-input"
-            placeholder="you@knust.edu.gh"
+            placeholder="Enter your email address"
             value={form.email}
             onChange={(e) => setForm({ ...form, email: e.target.value })}
           />
@@ -74,10 +74,6 @@ export default function Login() {
         <Link to="/register" className="text-forest font-medium hover:underline">
           Sign up
         </Link>
-      </p>
-
-      <p className="text-xs text-ink/40 mt-4 text-center">
-        Admin demo login: admin@knust.edu.gh / admin123
       </p>
     </div>
   );
