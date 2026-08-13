@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import api from "../lib/api";
+import CategoryIcon from "../components/CategoryIcon";
 import ItemCard from "../components/ItemCard";
 
 const CATEGORIES = ["Electronics", "Documents", "Accessories", "Bags", "Books", "Keys", "Clothing", "Other"];
@@ -41,10 +42,26 @@ export default function Browse() {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
         />
-        <select className="field-input" value={category} onChange={(e) => setCategory(e.target.value)}>
-          <option value="">All categories</option>
-          {CATEGORIES.map((itemCategory) => <option key={itemCategory}>{itemCategory}</option>)}
-        </select>
+        <fieldset className="sm:col-span-2">
+          <legend className="field-label">Category</legend>
+          <div className="grid grid-cols-4 sm:grid-cols-8 gap-2">
+            <CategoryButton
+              label="All"
+              active={!category}
+              onClick={() => setCategory("")}
+              icon={<span className="text-lg font-bold leading-none">#</span>}
+            />
+            {CATEGORIES.map((itemCategory) => (
+              <CategoryButton
+                key={itemCategory}
+                label={itemCategory}
+                active={category === itemCategory}
+                onClick={() => setCategory(itemCategory)}
+                icon={<CategoryIcon category={itemCategory} className="h-5 w-5" />}
+              />
+            ))}
+          </div>
+        </fieldset>
         <select className="field-input" value={status} onChange={(e) => setStatus(e.target.value)}>
           <option value="">All statuses</option>
           <option value="Lost">Lost</option>
@@ -67,5 +84,23 @@ export default function Browse() {
         </section>
       )}
     </div>
+  );
+}
+
+function CategoryButton({ label, active, onClick, icon }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={active}
+      className={`flex min-h-20 flex-col items-center justify-center gap-1 rounded-sm border px-1 py-2 text-xs font-medium transition ${
+        active
+          ? "border-forest bg-forest text-white"
+          : "border-line bg-white text-ink/70 hover:border-forest hover:text-forest"
+      }`}
+    >
+      {icon}
+      <span className="text-center leading-tight">{label}</span>
+    </button>
   );
 }
