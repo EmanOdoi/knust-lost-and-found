@@ -1,8 +1,16 @@
 const Database = require("better-sqlite3");
+const fs = require("fs");
 const path = require("path");
 const bcrypt = require("bcryptjs");
 
-const db = new Database(path.join(__dirname, "lostfound.db"));
+// Keep the local default for development, while deployments can point SQLite
+// at a persistent volume.
+const databasePath = process.env.DATABASE_PATH
+  ? path.resolve(process.env.DATABASE_PATH)
+  : path.join(__dirname, "lostfound.db");
+
+fs.mkdirSync(path.dirname(databasePath), { recursive: true });
+const db = new Database(databasePath);
 db.pragma("journal_mode = WAL");
 db.pragma("foreign_keys = ON");
 

@@ -1,6 +1,7 @@
 import { Routes, Route } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import Home from "./pages/Home";
+import Browse from "./pages/Browse";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import ReportItem from "./pages/ReportItem";
@@ -16,6 +17,7 @@ export default function App() {
       <main className="flex-1">
         <Routes>
           <Route path="/" element={<Home />} />
+          <Route path="/browse" element={<Browse />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/items/:id" element={<ItemDetail />} />

@@ -1,10 +1,11 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import { House, Search } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 
 function NavLink({ to, children }) {
   return (
-    <Link to={to} className="relative group py-1">
+    <Link to={to} className="relative group flex items-center gap-1 py-1">
       {children}
       <span className="absolute left-0 -bottom-0.5 h-0.5 w-0 bg-brass transition-all duration-300 group-hover:w-full" />
     </Link>
@@ -38,7 +39,8 @@ export default function Navbar() {
         </Link>
 
         <nav className="hidden sm:flex items-center gap-6 text-sm font-medium">
-          <NavLink to="/">Browse</NavLink>
+          <NavLink to="/"><House size={17} aria-hidden="true" /> <span>Home</span></NavLink>
+          <NavLink to="/browse"><Search size={17} aria-hidden="true" /> <span>Browse</span></NavLink>
           {user && <NavLink to="/report">Report an item</NavLink>}
           {user && <NavLink to="/my-reports">My reports</NavLink>}
           {user?.role === "admin" && <NavLink to="/admin">Admin</NavLink>}
@@ -68,8 +70,9 @@ export default function Navbar() {
       </header>
 
       {user && (
-        <nav className="sm:hidden fixed inset-x-0 bottom-0 z-40 grid grid-cols-3 border-t border-line bg-white/95 px-3 py-2 shadow-lg backdrop-blur">
-          <BottomNavButton to="/" active={location.pathname === "/"} icon="browse">Browse</BottomNavButton>
+        <nav className="sm:hidden fixed inset-x-0 bottom-0 z-40 grid grid-cols-4 border-t border-line bg-white/95 px-3 py-2 shadow-lg backdrop-blur">
+          <BottomNavButton to="/" active={location.pathname === "/"} icon="home">Home</BottomNavButton>
+          <BottomNavButton to="/browse" active={location.pathname === "/browse"} icon="browse">Browse</BottomNavButton>
           <BottomNavButton to="/report" active={location.pathname === "/report"} icon="report">Report</BottomNavButton>
           <BottomNavButton to="/my-reports" active={location.pathname === "/my-reports"} icon="mine">Mine</BottomNavButton>
         </nav>
@@ -127,6 +130,15 @@ function BottomNavIcon({ name }) {
       <svg {...commonProps}>
         <circle cx="12" cy="8" r="3.5" />
         <path d="M5 21a7 7 0 0 1 14 0" />
+      </svg>
+    );
+  }
+
+  if (name === "home") {
+    return (
+      <svg {...commonProps}>
+        <path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z" />
+        <path d="M9 21v-6h6v6" />
       </svg>
     );
   }

@@ -21,6 +21,30 @@ async function post(path, body, token) {
   return data;
 }
 
+async function get(path, token) {
+  const res = await fetch(`${BASE}${path}`, {
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(`${path} -> ${res.status}: ${data.error}`);
+  return data;
+}
+
+async function registerOrLogin(student) {
+  try {
+    const { token } = await post("/auth/register", student);
+    return { token, created: true };
+  } catch (err) {
+    // A previous attempt might have created the account before seed stopped.
+    if (!err.message.startsWith("/auth/register -> 409:")) throw err;
+    const { token } = await post("/auth/login", {
+      email: student.email,
+      password: student.password,
+    });
+    return { token, created: false };
+  }
+}
+
 async function postForm(path, fields, token) {
   const form = new FormData();
   Object.entries(fields).forEach(([k, v]) => form.append(k, v));
@@ -55,8 +79,9 @@ async function main() {
   ];
   const tokens = {};
   for (const s of students) {
-    const { token } = await post("/auth/register", s);
+    const { token, created } = await registerOrLogin(s);
     tokens[s.name] = token;
+    console.log(`  ${created ? "+" : "="} ${s.email}`);
   }
 
   console.log("Creating item reports...");
@@ -137,25 +162,37 @@ async function main() {
 
   const createdItems = {};
   for (const item of items) {
-    const { item: created } = await postForm(
-      "/items",
-      {
-        title: item.title,
-        category: item.category,
-        description: item.description,
-        location: item.location,
-        date: item.date,
-        status: item.status,
-      },
-      tokens[item.by]
+    const { items: matches } = await get(`/items?query=${encodeURIComponent(item.title)}`);
+    let created = matches.find(
+      (candidate) => candidate.title === item.title && candidate.owner_name === item.by
     );
+    const reused = Boolean(created);
+    if (!created) {
+      ({ item: created } = await postForm(
+        "/items",
+        {
+          title: item.title,
+          category: item.category,
+          description: item.description,
+          location: item.location,
+          date: item.date,
+          status: item.status,
+        },
+        tokens[item.by]
+      ));
+    }
     createdItems[item.title] = created;
-    console.log(`  + [${item.status}] ${item.title}`);
+    console.log(`  ${reused ? "=" : "+"} [${item.status}] ${item.title}`);
   }
 
   console.log("Submitting claims...");
   // Kojo claims the found iPhone that matches his lost report
   const foundIphone = createdItems["iPhone found near Unity Hall"];
+  const { claims: iphoneClaims } = await get(
+    `/claims/item/${foundIphone.item_id}`,
+    tokens["Ama Serwaa"]
+  );
+  if (!iphoneClaims.some((claim) => claim.claimant_name === "Kojo Mensah")) {
   await post(
     "/claims",
     {
@@ -166,25 +203,32 @@ async function main() {
     tokens["Kojo Mensah"]
   );
   console.log(`  + Kojo Mensah claimed "iPhone found near Unity Hall" (pending review)`);
+  }
 
   // Efua's ID card gets claimed and approved end-to-end, so one item shows as Recovered
   const foundKeys = createdItems["Bunch of keys with a Ghana flag keychain"];
-  const { claim } = await post(
+  const { claims: keyClaims } = await get(`/claims/item/${foundKeys.item_id}`, tokens["Efua Owusu"]);
+  let claim = keyClaims.find((candidate) => candidate.claimant_name === "Yaw Boateng");
+  if (!claim) {
+    ({ claim } = await post(
     "/claims",
     {
       item_id: foundKeys.item_id,
       message: "Those are my keys — the third key is a small padlock key for my hostel trunk.",
     },
     tokens["Yaw Boateng"]
-  );
+    ));
+  }
 
   console.log("Approving one claim as admin (demonstrates full recovery flow)...");
   const { token: adminToken } = await post("/auth/login", {
     email: "admin@knust.edu.gh",
     password: "admin123",
   });
-  await patch(`/claims/${claim.claim_id}`, { status: "Approved" }, adminToken);
-  console.log(`  + Approved Yaw Boateng's claim on "Bunch of keys..." -> item now Recovered`);
+  if (claim.status === "Pending") {
+    await patch(`/claims/${claim.claim_id}`, { status: "Approved" }, adminToken);
+    console.log(`  + Approved Yaw Boateng's claim on "Bunch of keys..." -> item now Recovered`);
+  }
 
   console.log("\nDemo data seeded successfully.");
   console.log("Student logins (all use password: password1):");

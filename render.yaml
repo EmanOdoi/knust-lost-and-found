@@ -3,7 +3,8 @@ services:
     name: knust-lostfound-api
     runtime: node
     rootDir: backend
-    plan: free
+    # SQLite needs a persistent disk to retain accounts after restarts.
+    plan: starter
     buildCommand: npm install
     startCommand: npm start
     envVars:
@@ -11,3 +12,9 @@ services:
         generateValue: true
       - key: PORT
         value: 4000
+      - key: DATABASE_PATH
+        value: /var/data/lostfound.db
+    disk:
+      name: lostfound-data
+      mountPath: /var/data
+      sizeGB: 1

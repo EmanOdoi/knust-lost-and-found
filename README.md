@@ -116,7 +116,7 @@ host or by Express itself (e.g. `express.static`) alongside the API.
 
 ## Deploying online (permanent link, not just local network)
 
-This deploys the backend to **Render** (free) and the frontend to **Vercel** (free).
+This deploys the backend to **Render** and the frontend to **Vercel** (free).
 Once done, both you and anyone else can open the app from any network, on any device,
 without your laptop needing to be on or nearby.
 
@@ -151,14 +151,16 @@ git push -u origin main
 **If you'd rather set it up manually instead of using the blueprint:**
 New + → Web Service → connect your repo → set **Root Directory** to `backend`,
 **Build Command** to `npm install`, **Start Command** to `npm start`, and add an
-environment variable `JWT_SECRET` with any long random string.
+environment variable `JWT_SECRET` with any long random string. To retain
+accounts, select the Starter plan, attach a 1 GB disk at `/var/data`, and add
+`DATABASE_PATH=/var/data/lostfound.db`.
 
-> **Free-tier caveats worth knowing:**
-> - Render's free web services spin down after 15 minutes of no traffic, so the
->   first request after idling can take 30–60 seconds to wake back up — normal, not a bug.
-> - The free tier doesn't include persistent disk storage, so the SQLite database
->   (and any uploaded photos) reset whenever the service restarts or redeploys.
->   Re-run `npm run seed` (see below) any time you need demo data back after a redeploy.
+> **Account persistence:** The included `render.yaml` uses a Starter web service
+> with a persistent disk. User accounts are stored at `/var/data/lostfound.db`,
+> so they survive restarts and redeploys. Do not change this service back to the
+> Free plan: free instances have an ephemeral filesystem and will lose SQLite
+> data whenever they spin down. A free deployment requires an external database
+> such as Postgres instead.
 
 ### Step 3 — Deploy the frontend to Vercel
 
