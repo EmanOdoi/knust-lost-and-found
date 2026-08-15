@@ -3,7 +3,7 @@ const express = require("express");
 const cors = require("cors");
 const path = require("path");
 
-require("./db"); // initializes schema + seeds admin
+const { initializeDb } = require("./db");
 
 const authRoutes = require("./routes/auth");
 const itemRoutes = require("./routes/items");
@@ -32,6 +32,11 @@ app.use((err, req, res, next) => {
 
 app.use((req, res) => res.status(404).json({ error: "Not found." }));
 
-app.listen(PORT, () => {
-  console.log(`Lost & Found API running on http://localhost:${PORT}`);
-});
+initializeDb()
+  .then(() => {
+    app.listen(PORT, () => console.log(`Lost & Found API running on http://localhost:${PORT}`));
+  })
+  .catch((error) => {
+    console.error("Database initialization failed:", error.message);
+    process.exit(1);
+  });
