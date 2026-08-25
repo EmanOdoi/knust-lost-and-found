@@ -1,4 +1,5 @@
 const express = require("express");
+const crypto = require("crypto");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const db = require("../db");
@@ -57,6 +58,87 @@ router.post("/login", async (req, res, next) => {
     token,
     user: { user_id: user.user_id, name: user.name, email: user.email, role: user.role },
   });
+  } catch (error) { next(error); }
+});
+
+router.post("/forgot-password", async (req, res, next) => {
+  try {
+  const { email } = req.body;
+  if (!email) {
+    return res.status(400).json({ error: "Email is required." });
+  }
+
+  const normalizedEmail = email.toLowerCase().trim();
+  const user = await db.get("SELECT user_id, name FROM users WHERE email = ?", normalizedEmail);
+
+  // Respond the same way whether or not the account exists, so we don't reveal which emails are registered.
+  if (user) {
+    const rawToken = crypto.randomBytes(32).toString("hex");
+    const hashedToken = crypto.createHash("sha256").update(rawToken).digest("hex");
+    const expires = new Date(Date.now() + 30 * 60 * 1000); // 30 minutes
+
+    await db.run(
+      "UPDATE users SET reset_token = ?, reset_token_expires = ? WHERE user_id = ?",
+      hashedToken, expires.toISOString(), user.user_id
+    );
+
+    const resetUrl = `${process.env.FRONTEND_URL || "http://localhost:5173"}/reset-password?token=${rawToken}`;
+
+    if (process.env.RESEND_API_KEY) {
+      try {
+        await fetch("https://api.resend.com/emails", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            from: process.env.RESEND_FROM || "KNUST Lost & Found <onboarding@resend.dev>",
+            to: normalizedEmail,
+            subject: "Reset your password",
+            html: `<p>Hi ${user.name},</p><p>Click the link below to reset your password. This link expires in 30 minutes.</p><p><a href="${resetUrl}">${resetUrl}</a></p><p>If you didn't request this, you can safely ignore this email.</p>`,
+          }),
+        });
+      } catch (emailError) {
+        console.error("Failed to send reset email:", emailError);
+      }
+    } else {
+      // No Resend key configured yet — log the link so the flow is still testable end-to-end.
+      console.log(`[DEV] Password reset link for ${normalizedEmail}: ${resetUrl}`);
+    }
+  }
+
+  res.json({ message: "If that email is registered, a reset link has been sent." });
+  } catch (error) { next(error); }
+});
+
+router.post("/reset-password", async (req, res, next) => {
+  try {
+  const { token, password } = req.body;
+  if (!token || !password) {
+    return res.status(400).json({ error: "Token and new password are required." });
+  }
+  if (password.length < 6) {
+    return res.status(400).json({ error: "Password must be at least 6 characters." });
+  }
+
+  const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
+  const user = await db.get(
+    "SELECT user_id, reset_token_expires FROM users WHERE reset_token = ?",
+    hashedToken
+  );
+
+  if (!user || !user.reset_token_expires || new Date(user.reset_token_expires) < new Date()) {
+    return res.status(400).json({ error: "This reset link is invalid or has expired." });
+  }
+
+  const hash = bcrypt.hashSync(password, 10);
+  await db.run(
+    "UPDATE users SET password = ?, reset_token = NULL, reset_token_expires = NULL WHERE user_id = ?",
+    hash, user.user_id
+  );
+
+  res.json({ message: "Your password has been updated. You can now log in." });
   } catch (error) { next(error); }
 });
 

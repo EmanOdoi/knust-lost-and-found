@@ -35,13 +35,12 @@ export function ToastProvider({ children }) {
               exit={{ opacity: 0, x: 40, scale: 0.9, transition: { duration: 0.2 } }}
               transition={{ type: "spring", stiffness: 400, damping: 28 }}
               onClick={() => dismiss(t.id)}
-              className={`pointer-events-auto cursor-pointer max-w-sm px-4 py-3 rounded-sm shadow-lg border text-sm font-medium flex items-center gap-2 ${
-                t.type === "error"
-                  ? "bg-white border-red-200 text-red-700"
-                  : t.type === "info"
+              className={`pointer-events-auto cursor-pointer max-w-sm px-4 py-3 rounded-sm shadow-lg border text-sm font-medium flex items-center gap-2 ${t.type === "error"
+                ? "bg-white border-red-200 text-red-700"
+                : t.type === "info"
                   ? "bg-white border-brass/40 text-brass"
                   : "bg-forest border-forest-deep text-white"
-              }`}
+                }`}
             >
               <StatusIcon type={t.type} />
               <span>{t.message}</span>

@@ -1,12 +1,15 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useAuth } from "../context/AuthContext";
 
-export default function Register() {
-  const { register } = useAuth();
+export default function ResetPassword() {
+  const { resetPassword } = useAuth();
   const navigate = useNavigate();
-  const [form, setForm] = useState({ name: "", email: "", password: "", confirmPassword: "" });
+  const [searchParams] = useSearchParams();
+  const token = searchParams.get("token") || "";
+
+  const [form, setForm] = useState({ password: "", confirmPassword: "" });
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
 
@@ -21,8 +24,8 @@ export default function Register() {
 
     setBusy(true);
     try {
-      await register(form.name, form.email, form.password);
-      navigate("/");
+      await resetPassword(token, form.password);
+      navigate("/login");
     } catch (err) {
       setError(err.message);
     } finally {
@@ -30,10 +33,24 @@ export default function Register() {
     }
   }
 
+  if (!token) {
+    return (
+      <div className="max-w-md mx-auto px-4 py-16 text-center">
+        <p className="text-ink/60">
+          This reset link is missing or invalid.{" "}
+          <Link to="/forgot-password" className="text-forest font-medium hover:underline">
+            Request a new one
+          </Link>
+          .
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-md mx-auto px-4 py-16">
-      <h1 className="text-2xl font-bold text-ink mb-1">Create your account</h1>
-      <p className="text-ink/60 mb-8">Use your KNUST details to get started.</p>
+      <h1 className="text-2xl font-bold text-ink mb-1">Set a new password</h1>
+      <p className="text-ink/60 mb-8">Choose a new password for your account.</p>
 
       <motion.form
         initial={{ opacity: 0, y: 14 }}
@@ -48,28 +65,7 @@ export default function Register() {
           </div>
         )}
         <div>
-          <label className="field-label">Full name</label>
-          <input
-            required
-            className="field-input"
-            placeholder="Ama Serwaa"
-            value={form.name}
-            onChange={(e) => setForm({ ...form, name: e.target.value })}
-          />
-        </div>
-        <div>
-          <label className="field-label">Email</label>
-          <input
-            type="email"
-            required
-            className="field-input"
-            placeholder="Enter your email address"
-            value={form.email}
-            onChange={(e) => setForm({ ...form, email: e.target.value })}
-          />
-        </div>
-        <div>
-          <label className="field-label">Password</label>
+          <label className="field-label">New password</label>
           <input
             type="password"
             required
@@ -81,28 +77,21 @@ export default function Register() {
           />
         </div>
         <div>
-          <label className="field-label">Confirm password</label>
+          <label className="field-label">Confirm new password</label>
           <input
             type="password"
             required
             minLength={6}
             className="field-input"
-            placeholder="Re-enter your password"
+            placeholder="Re-enter your new password"
             value={form.confirmPassword}
             onChange={(e) => setForm({ ...form, confirmPassword: e.target.value })}
           />
         </div>
         <button type="submit" disabled={busy} className="btn-primary w-full">
-          {busy ? "Creating account…" : "Sign up"}
+          {busy ? "Updating…" : "Update password"}
         </button>
       </motion.form>
-
-      <p className="text-sm text-ink/60 mt-6 text-center">
-        Already have an account?{" "}
-        <Link to="/login" className="text-forest font-medium hover:underline">
-          Log in
-        </Link>
-      </p>
     </div>
   );
 }
