@@ -52,7 +52,7 @@ export default function Register() {
           <input
             required
             className="field-input"
-            placeholder="Ama Serwaa"
+            placeholder="Emmanuel Odoi"
             value={form.name}
             onChange={(e) => setForm({ ...form, name: e.target.value })}
           />
