@@ -44,6 +44,11 @@ export function AuthProvider({ children }) {
     return res.data;
   }
 
+  async function verifyResetCode(email, code) {
+    const res = await api.post("/auth/verify-reset-code", { email, code });
+    return res.data;
+  }
+
   async function resetPassword(email, code, password) {
     const res = await api.post("/auth/reset-password", { email, code, password });
     return res.data;
@@ -51,7 +56,16 @@ export function AuthProvider({ children }) {
 
   return (
     <AuthContext.Provider
-      value={{ user, loading, login, register, logout, forgotPassword, resetPassword }}
+      value={{
+        user,
+        loading,
+        login,
+        register,
+        logout,
+        forgotPassword,
+        verifyResetCode,
+        resetPassword,
+      }}
     >
       {children}
     </AuthContext.Provider>

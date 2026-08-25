@@ -110,6 +110,35 @@ router.post("/forgot-password", async (req, res, next) => {
   } catch (error) { next(error); }
 });
 
+router.post("/verify-reset-code", async (req, res, next) => {
+  try {
+  const { email, code } = req.body;
+  if (!email || !code) {
+    return res.status(400).json({ error: "Email and code are required." });
+  }
+
+  const normalizedEmail = email.toLowerCase().trim();
+  const hashedCode = crypto.createHash("sha256").update(code.trim()).digest("hex");
+
+  const user = await db.get(
+    "SELECT reset_token, reset_token_expires FROM users WHERE email = ?",
+    normalizedEmail
+  );
+
+  if (
+    !user ||
+    !user.reset_token ||
+    user.reset_token !== hashedCode ||
+    !user.reset_token_expires ||
+    new Date(user.reset_token_expires) < new Date()
+  ) {
+    return res.status(400).json({ error: "That code is invalid or has expired." });
+  }
+
+  res.json({ valid: true });
+  } catch (error) { next(error); }
+});
+
 router.post("/reset-password", async (req, res, next) => {
   try {
   const { email, code, password } = req.body;
