@@ -44,8 +44,8 @@ export function AuthProvider({ children }) {
     return res.data;
   }
 
-  async function resetPassword(token, password) {
-    const res = await api.post("/auth/reset-password", { token, password });
+  async function resetPassword(email, code, password) {
+    const res = await api.post("/auth/reset-password", { email, code, password });
     return res.data;
   }
 

@@ -73,16 +73,14 @@ router.post("/forgot-password", async (req, res, next) => {
 
   // Respond the same way whether or not the account exists, so we don't reveal which emails are registered.
   if (user) {
-    const rawToken = crypto.randomBytes(32).toString("hex");
-    const hashedToken = crypto.createHash("sha256").update(rawToken).digest("hex");
-    const expires = new Date(Date.now() + 30 * 60 * 1000); // 30 minutes
+    const code = String(crypto.randomInt(100000, 999999));
+    const hashedCode = crypto.createHash("sha256").update(code).digest("hex");
+    const expires = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
 
     await db.run(
       "UPDATE users SET reset_token = ?, reset_token_expires = ? WHERE user_id = ?",
-      hashedToken, expires.toISOString(), user.user_id
+      hashedCode, expires.toISOString(), user.user_id
     );
-
-    const resetUrl = `${process.env.FRONTEND_URL || "http://localhost:5173"}/reset-password?token=${rawToken}`;
 
     if (process.env.RESEND_API_KEY) {
       try {
@@ -95,41 +93,49 @@ router.post("/forgot-password", async (req, res, next) => {
           body: JSON.stringify({
             from: process.env.RESEND_FROM || "KNUST Lost & Found <onboarding@resend.dev>",
             to: normalizedEmail,
-            subject: "Reset your password",
-            html: `<p>Hi ${user.name},</p><p>Click the link below to reset your password. This link expires in 30 minutes.</p><p><a href="${resetUrl}">${resetUrl}</a></p><p>If you didn't request this, you can safely ignore this email.</p>`,
+            subject: "Your password reset code",
+            html: `<p>Hi ${user.name},</p><p>Your password reset code is:</p><p style="font-size:24px;font-weight:bold;letter-spacing:4px;">${code}</p><p>This code expires in 15 minutes. If you didn't request this, you can safely ignore this email.</p>`,
           }),
         });
       } catch (emailError) {
-        console.error("Failed to send reset email:", emailError);
+        console.error("Failed to send reset code email:", emailError);
       }
     } else {
-      // No Resend key configured yet — log the link so the flow is still testable end-to-end.
-      console.log(`[DEV] Password reset link for ${normalizedEmail}: ${resetUrl}`);
+      // No Resend key configured yet — log the code so the flow is still testable end-to-end.
+      console.log(`[DEV] Password reset code for ${normalizedEmail}: ${code}`);
     }
   }
 
-  res.json({ message: "If that email is registered, a reset link has been sent." });
+  res.json({ message: "If that email is registered, a reset code has been sent." });
   } catch (error) { next(error); }
 });
 
 router.post("/reset-password", async (req, res, next) => {
   try {
-  const { token, password } = req.body;
-  if (!token || !password) {
-    return res.status(400).json({ error: "Token and new password are required." });
+  const { email, code, password } = req.body;
+  if (!email || !code || !password) {
+    return res.status(400).json({ error: "Email, code, and new password are all required." });
   }
   if (password.length < 6) {
     return res.status(400).json({ error: "Password must be at least 6 characters." });
   }
 
-  const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
+  const normalizedEmail = email.toLowerCase().trim();
+  const hashedCode = crypto.createHash("sha256").update(code.trim()).digest("hex");
+
   const user = await db.get(
-    "SELECT user_id, reset_token_expires FROM users WHERE reset_token = ?",
-    hashedToken
+    "SELECT user_id, reset_token, reset_token_expires FROM users WHERE email = ?",
+    normalizedEmail
   );
 
-  if (!user || !user.reset_token_expires || new Date(user.reset_token_expires) < new Date()) {
-    return res.status(400).json({ error: "This reset link is invalid or has expired." });
+  if (
+    !user ||
+    !user.reset_token ||
+    user.reset_token !== hashedCode ||
+    !user.reset_token_expires ||
+    new Date(user.reset_token_expires) < new Date()
+  ) {
+    return res.status(400).json({ error: "That code is invalid or has expired." });
   }
 
   const hash = bcrypt.hashSync(password, 10);
