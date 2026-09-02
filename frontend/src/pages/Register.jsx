@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import { Eye, EyeOff } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 
 export default function Register() {
@@ -9,6 +10,8 @@ export default function Register() {
   const [form, setForm] = useState({ name: "", email: "", password: "", confirmPassword: "" });
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -70,27 +73,49 @@ export default function Register() {
         </div>
         <div>
           <label className="field-label">Password</label>
-          <input
-            type="password"
-            required
-            minLength={6}
-            className="field-input"
-            placeholder="At least 6 characters"
-            value={form.password}
-            onChange={(e) => setForm({ ...form, password: e.target.value })}
-          />
+          <div className="relative">
+            <input
+              type={showPassword ? "text" : "password"}
+              required
+              minLength={6}
+              className="field-input pr-10"
+              placeholder="At least 6 characters"
+              value={form.password}
+              onChange={(e) => setForm({ ...form, password: e.target.value })}
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword((v) => !v)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-ink/40 hover:text-ink/70"
+              aria-label={showPassword ? "Hide password" : "Show password"}
+              tabIndex={-1}
+            >
+              {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+            </button>
+          </div>
         </div>
         <div>
           <label className="field-label">Confirm password</label>
-          <input
-            type="password"
-            required
-            minLength={6}
-            className="field-input"
-            placeholder="Re-enter your password"
-            value={form.confirmPassword}
-            onChange={(e) => setForm({ ...form, confirmPassword: e.target.value })}
-          />
+          <div className="relative">
+            <input
+              type={showConfirmPassword ? "text" : "password"}
+              required
+              minLength={6}
+              className="field-input pr-10"
+              placeholder="Re-enter your password"
+              value={form.confirmPassword}
+              onChange={(e) => setForm({ ...form, confirmPassword: e.target.value })}
+            />
+            <button
+              type="button"
+              onClick={() => setShowConfirmPassword((v) => !v)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-ink/40 hover:text-ink/70"
+              aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+              tabIndex={-1}
+            >
+              {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+            </button>
+          </div>
         </div>
         <button type="submit" disabled={busy} className="btn-primary w-full">
           {busy ? "Creating account…" : "Sign up"}
