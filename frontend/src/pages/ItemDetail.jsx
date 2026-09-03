@@ -87,9 +87,20 @@ export default function ItemDetail() {
             Reported by {item.owner_name}{isOwner ? " (you)" : ""} &middot; Ticket #{String(item.item_id).padStart(4, "0")}
           </p>
 
-          {isOwner && item.status !== "Recovered" && (
-            <button onClick={handleDelete} className="btn-danger mt-4">Remove report</button>
-          )}
+          <div className="flex gap-3 mt-5">
+            {isOwner && item.status !== "Recovered" && (
+              <button onClick={handleDelete} className="btn-danger">Remove report</button>
+            )}
+
+            {!isOwner && item.status !== "Recovered" && item.owner_email && (
+              <a
+                href={`mailto:${item.owner_email}?subject=Regarding your post about: ${item.title}`}
+                className="btn-secondary inline-block"
+              >
+                Contact {item.status === "Found" ? "Finder" : "Reporter"} Directly
+              </a>
+            )}
+          </div>
         </div>
       </div>
 
@@ -143,10 +154,9 @@ export default function ItemDetail() {
               <div key={c.claim_id} className="ticket p-4">
                 <div className="flex items-center justify-between">
                   <span className="font-medium text-ink">{c.claimant_name}</span>
-                  <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
-                    c.status === "Approved" ? "bg-forest-50 text-forest" :
-                    c.status === "Rejected" ? "bg-red-50 text-red-600" : "bg-brass-50 text-brass"
-                  }`}>
+                  <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${c.status === "Approved" ? "bg-forest-50 text-forest" :
+                      c.status === "Rejected" ? "bg-red-50 text-red-600" : "bg-brass-50 text-brass"
+                    }`}>
                     {c.status}
                   </span>
                 </div>
