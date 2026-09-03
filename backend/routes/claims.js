@@ -1,7 +1,7 @@
 const express = require("express");
 const db = require("../db");
 const { requireAuth, requireAdmin } = require("../middleware/auth");
-const { sendMail, claimSubmittedEmail, claimApprovedEmail, claimRejectedEmail } = require("../lib/mail");
+const { sendMail, claimSubmittedEmail, claimApprovedEmail, claimRejectedEmail, itemRecoveredEmail } = require("../lib/mail");
 
 const router = express.Router();
 
@@ -90,10 +90,16 @@ router.get("/item/:itemId", requireAuth, async (req, res, next) => {
 router.get("/", requireAuth, requireAdmin, async (req, res, next) => {
   try {
     const claims = await db.all(
-      `SELECT c.*, i.title AS item_title, i.status AS item_status, u.name AS claimant_name
+      `SELECT c.*,
+              i.title AS item_title, i.status AS item_status, i.category AS item_category,
+              i.description AS item_description, i.location AS item_location,
+              i.date AS item_date, i.image AS item_image,
+              u.name AS claimant_name, u.email AS claimant_email,
+              o.name AS owner_name, o.email AS owner_email
        FROM claims c
        JOIN items i ON i.item_id = c.item_id
        JOIN users u ON u.user_id = c.user_id
+       JOIN users o ON o.user_id = i.owner_id
        ORDER BY c.created_at DESC`
     );
     res.json({ claims });
@@ -131,15 +137,39 @@ router.patch("/:id", requireAuth, requireAdmin, async (req, res, next) => {
 
     // Notify the claimant of the outcome — never let a mail failure affect the response
     const claimant = await db.get("SELECT name, email FROM users WHERE user_id = ?", claim.user_id);
-    const item = await db.get("SELECT title FROM items WHERE item_id = ?", claim.item_id);
-    if (claimant && item) {
+    const item = await db.get("SELECT title, owner_id FROM items WHERE item_id = ?", claim.item_id);
+
+    if (status === "Approved" && claimant && item) {
+      // The reporter (item owner) and the claimant now need to arrange a handover,
+      // so each gets the other person's name and email once the admin approves.
+      const owner = await db.get("SELECT name, email FROM users WHERE user_id = ?", item.owner_id);
+      if (owner) {
+        sendMail({
+          to: claimant.email,
+          subject: `Your claim on "${item.title}" was approved`,
+          html: claimApprovedEmail({
+            claimantName: claimant.name,
+            itemTitle: item.title,
+            contactName: owner.name,
+            contactEmail: owner.email,
+          }),
+        });
+        sendMail({
+          to: owner.email,
+          subject: `"${item.title}" has been claimed`,
+          html: itemRecoveredEmail({
+            ownerName: owner.name,
+            itemTitle: item.title,
+            contactName: claimant.name,
+            contactEmail: claimant.email,
+          }),
+        });
+      }
+    } else if (status === "Rejected" && claimant && item) {
       sendMail({
         to: claimant.email,
-        subject: status === "Approved" ? `Your claim on "${item.title}" was approved` : `Update on your claim for "${item.title}"`,
-        html:
-          status === "Approved"
-            ? claimApprovedEmail({ claimantName: claimant.name, itemTitle: item.title })
-            : claimRejectedEmail({ claimantName: claimant.name, itemTitle: item.title }),
+        subject: `Update on your claim for "${item.title}"`,
+        html: claimRejectedEmail({ claimantName: claimant.name, itemTitle: item.title }),
       });
     }
 

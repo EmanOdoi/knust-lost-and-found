@@ -57,7 +57,18 @@ function claimSubmittedEmail({ ownerName, itemTitle, claimantName, message }) {
   );
 }
 
-function claimApprovedEmail({ claimantName, itemTitle }) {
+function contactCard({ contactName, contactEmail }) {
+  return `
+    <div style="background:#FBF1DF; border-left:3px solid #C98A2C; margin:12px 0; padding:10px 14px; border-radius:2px;">
+      <p style="margin:0 0 2px; color:#172420; font-size:13px; font-weight:600;">${contactName}</p>
+      <p style="margin:0; color:#172420; font-size:14px;">
+        <a href="mailto:${contactEmail}" style="color:#00563F;">${contactEmail}</a>
+      </p>
+    </div>
+  `;
+}
+
+function claimApprovedEmail({ claimantName, itemTitle, contactName, contactEmail }) {
   return wrapper(
     "Your claim was approved",
     `
@@ -66,8 +77,25 @@ function claimApprovedEmail({ claimantName, itemTitle }) {
         approved by an admin. The item is now marked <strong>Recovered</strong>.
       </p>
       <p style="color:#172420; font-size:14px; line-height:1.5;">
-        Reach out to the reporter to arrange collection.
+        You can now contact the reporter directly to arrange collection:
       </p>
+      ${contactCard({ contactName, contactEmail })}
+    `
+  );
+}
+
+function itemRecoveredEmail({ ownerName, itemTitle, contactName, contactEmail }) {
+  return wrapper(
+    "Your item has been claimed",
+    `
+      <p style="color:#172420; font-size:14px; line-height:1.5;">
+        Hi ${ownerName}, an admin approved a claim on your report for
+        <strong>${itemTitle}</strong>. It's now marked <strong>Recovered</strong>.
+      </p>
+      <p style="color:#172420; font-size:14px; line-height:1.5;">
+        You can contact the claimant directly to arrange handover:
+      </p>
+      ${contactCard({ contactName, contactEmail })}
     `
   );
 }
@@ -85,4 +113,4 @@ function claimRejectedEmail({ claimantName, itemTitle }) {
   );
 }
 
-module.exports = { sendMail, claimSubmittedEmail, claimApprovedEmail, claimRejectedEmail };
+module.exports = { sendMail, claimSubmittedEmail, claimApprovedEmail, claimRejectedEmail, itemRecoveredEmail };
