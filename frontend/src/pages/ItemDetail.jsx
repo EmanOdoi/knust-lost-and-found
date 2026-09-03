@@ -100,6 +100,22 @@ export default function ItemDetail() {
                 Contact {item.status === "Found" ? "Finder" : "Reporter"} Directly
               </a>
             )}
+
+            {!isOwner && item.status !== "Recovered" && item.owner_phone && (
+              <>
+                <a href={`tel:${item.owner_phone}`} className="btn-secondary inline-block">
+                  Call {item.status === "Found" ? "Finder" : "Reporter"}
+                </a>
+                <a
+                  href={`sms:${item.owner_phone}?body=${encodeURIComponent(
+                    `Hi, I'm messaging about your post "${item.title}" on KNUST Lost & Found.`
+                  )}`}
+                  className="btn-secondary inline-block"
+                >
+                  Text {item.status === "Found" ? "Finder" : "Reporter"}
+                </a>
+              </>
+            )}
           </div>
         </div>
       </div>
@@ -155,7 +171,7 @@ export default function ItemDetail() {
                 <div className="flex items-center justify-between">
                   <span className="font-medium text-ink">{c.claimant_name}</span>
                   <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${c.status === "Approved" ? "bg-forest-50 text-forest" :
-                      c.status === "Rejected" ? "bg-red-50 text-red-600" : "bg-brass-50 text-brass"
+                    c.status === "Rejected" ? "bg-red-50 text-red-600" : "bg-brass-50 text-brass"
                     }`}>
                     {c.status}
                   </span>
