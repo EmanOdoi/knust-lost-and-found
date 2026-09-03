@@ -57,18 +57,21 @@ function claimSubmittedEmail({ ownerName, itemTitle, claimantName, message }) {
   );
 }
 
-function contactCard({ contactName, contactEmail }) {
+function contactCard({ contactName, contactEmail, contactPhone }) {
   return `
     <div style="background:#FBF1DF; border-left:3px solid #C98A2C; margin:12px 0; padding:10px 14px; border-radius:2px;">
       <p style="margin:0 0 2px; color:#172420; font-size:13px; font-weight:600;">${contactName}</p>
       <p style="margin:0; color:#172420; font-size:14px;">
         <a href="mailto:${contactEmail}" style="color:#00563F;">${contactEmail}</a>
       </p>
+      ${contactPhone ? `<p style="margin:2px 0 0; color:#172420; font-size:14px;">
+        <a href="tel:${contactPhone}" style="color:#00563F;">${contactPhone}</a>
+      </p>` : ""}
     </div>
   `;
 }
 
-function claimApprovedEmail({ claimantName, itemTitle, contactName, contactEmail }) {
+function claimApprovedEmail({ claimantName, itemTitle, contactName, contactEmail, contactPhone }) {
   return wrapper(
     "Your claim was approved",
     `
@@ -79,12 +82,12 @@ function claimApprovedEmail({ claimantName, itemTitle, contactName, contactEmail
       <p style="color:#172420; font-size:14px; line-height:1.5;">
         You can now contact the reporter directly to arrange collection:
       </p>
-      ${contactCard({ contactName, contactEmail })}
+      ${contactCard({ contactName, contactEmail, contactPhone })}
     `
   );
 }
 
-function itemRecoveredEmail({ ownerName, itemTitle, contactName, contactEmail }) {
+function itemRecoveredEmail({ ownerName, itemTitle, contactName, contactEmail, contactPhone }) {
   return wrapper(
     "Your item has been claimed",
     `
@@ -95,7 +98,7 @@ function itemRecoveredEmail({ ownerName, itemTitle, contactName, contactEmail })
       <p style="color:#172420; font-size:14px; line-height:1.5;">
         You can contact the claimant directly to arrange handover:
       </p>
-      ${contactCard({ contactName, contactEmail })}
+      ${contactCard({ contactName, contactEmail, contactPhone })}
     `
   );
 }

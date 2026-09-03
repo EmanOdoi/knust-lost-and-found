@@ -94,8 +94,8 @@ router.get("/", requireAuth, requireAdmin, async (req, res, next) => {
               i.title AS item_title, i.status AS item_status, i.category AS item_category,
               i.description AS item_description, i.location AS item_location,
               i.date AS item_date, i.image AS item_image,
-              u.name AS claimant_name, u.email AS claimant_email,
-              o.name AS owner_name, o.email AS owner_email
+              u.name AS claimant_name, u.email AS claimant_email, u.phone AS claimant_phone,
+              o.name AS owner_name, o.email AS owner_email, o.phone AS owner_phone
        FROM claims c
        JOIN items i ON i.item_id = c.item_id
        JOIN users u ON u.user_id = c.user_id
@@ -136,13 +136,13 @@ router.patch("/:id", requireAuth, requireAdmin, async (req, res, next) => {
     });
 
     // Notify the claimant of the outcome — never let a mail failure affect the response
-    const claimant = await db.get("SELECT name, email FROM users WHERE user_id = ?", claim.user_id);
+    const claimant = await db.get("SELECT name, email, phone FROM users WHERE user_id = ?", claim.user_id);
     const item = await db.get("SELECT title, owner_id FROM items WHERE item_id = ?", claim.item_id);
 
     if (status === "Approved" && claimant && item) {
       // The reporter (item owner) and the claimant now need to arrange a handover,
-      // so each gets the other person's name and email once the admin approves.
-      const owner = await db.get("SELECT name, email FROM users WHERE user_id = ?", item.owner_id);
+      // so each gets the other person's name, email, and phone (if provided) once the admin approves.
+      const owner = await db.get("SELECT name, email, phone FROM users WHERE user_id = ?", item.owner_id);
       if (owner) {
         sendMail({
           to: claimant.email,
@@ -152,6 +152,7 @@ router.patch("/:id", requireAuth, requireAdmin, async (req, res, next) => {
             itemTitle: item.title,
             contactName: owner.name,
             contactEmail: owner.email,
+            contactPhone: owner.phone,
           }),
         });
         sendMail({
@@ -162,6 +163,7 @@ router.patch("/:id", requireAuth, requireAdmin, async (req, res, next) => {
             itemTitle: item.title,
             contactName: claimant.name,
             contactEmail: claimant.email,
+            contactPhone: claimant.phone,
           }),
         });
       }

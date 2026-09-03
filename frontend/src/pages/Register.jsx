@@ -7,7 +7,7 @@ import { useAuth } from "../context/AuthContext";
 export default function Register() {
   const { register } = useAuth();
   const navigate = useNavigate();
-  const [form, setForm] = useState({ name: "", email: "", password: "", confirmPassword: "" });
+  const [form, setForm] = useState({ name: "", email: "", phone: "", password: "", confirmPassword: "" });
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -24,7 +24,7 @@ export default function Register() {
 
     setBusy(true);
     try {
-      await register(form.name, form.email, form.password);
+      await register(form.name, form.email, form.phone, form.password);
       navigate("/");
     } catch (err) {
       setError(err.message);
@@ -69,6 +69,16 @@ export default function Register() {
             placeholder="Enter your email address"
             value={form.email}
             onChange={(e) => setForm({ ...form, email: e.target.value })}
+          />
+        </div>
+        <div>
+          <label className="field-label">Phone (optional)</label>
+          <input
+            type="tel"
+            className="field-input"
+            placeholder="e.g. 024 123 4567"
+            value={form.phone}
+            onChange={(e) => setForm({ ...form, phone: e.target.value })}
           />
         </div>
         <div>

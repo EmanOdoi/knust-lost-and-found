@@ -17,7 +17,7 @@ function sign(user) {
 
 router.post("/register", async (req, res, next) => {
   try {
-  const { name, email, password } = req.body;
+  const { name, email, password, phone } = req.body;
   if (!name || !email || !password) {
     return res.status(400).json({ error: "Name, email, and password are all required." });
   }
@@ -33,8 +33,8 @@ router.post("/register", async (req, res, next) => {
 
   const hash = bcrypt.hashSync(password, 10);
   const user = await db.get(
-    "INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, 'student') RETURNING user_id, name, email, role",
-    name.trim(), normalizedEmail, hash
+    "INSERT INTO users (name, email, password, phone, role) VALUES (?, ?, ?, ?, 'student') RETURNING user_id, name, email, phone, role",
+    name.trim(), normalizedEmail, hash, phone ? phone.trim() : null
   );
   const token = sign(user);
   res.status(201).json({ token, user });
@@ -56,7 +56,7 @@ router.post("/login", async (req, res, next) => {
   const token = sign(user);
   res.json({
     token,
-    user: { user_id: user.user_id, name: user.name, email: user.email, role: user.role },
+    user: { user_id: user.user_id, name: user.name, email: user.email, phone: user.phone, role: user.role },
   });
   } catch (error) { next(error); }
 });
@@ -179,7 +179,7 @@ router.post("/reset-password", async (req, res, next) => {
 
 router.get("/me", requireAuth, async (req, res, next) => {
   try {
-  const user = await db.get("SELECT user_id, name, email, role FROM users WHERE user_id = ?", req.user.user_id);
+  const user = await db.get("SELECT user_id, name, email, phone, role FROM users WHERE user_id = ?", req.user.user_id);
   if (!user) return res.status(404).json({ error: "User not found." });
   res.json({ user });
   } catch (error) { next(error); }
