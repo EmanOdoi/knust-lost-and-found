@@ -185,4 +185,31 @@ router.get("/me", requireAuth, async (req, res, next) => {
   } catch (error) { next(error); }
 });
 
+router.patch("/me", requireAuth, async (req, res, next) => {
+  try {
+    const { name, phone } = req.body;
+
+    const updates = [];
+    const params = [];
+    if (name !== undefined) {
+      if (!name.trim()) return res.status(400).json({ error: "Name cannot be empty." });
+      updates.push("name = ?");
+      params.push(name.trim());
+    }
+    if (phone !== undefined) {
+      updates.push("phone = ?");
+      params.push(phone.trim() ? phone.trim() : null);
+    }
+    if (updates.length === 0) {
+      return res.status(400).json({ error: "No fields to update." });
+    }
+
+    params.push(req.user.user_id);
+    await db.run(`UPDATE users SET ${updates.join(", ")} WHERE user_id = ?`, ...params);
+
+    const user = await db.get("SELECT user_id, name, email, phone, role FROM users WHERE user_id = ?", req.user.user_id);
+    res.json({ user });
+  } catch (error) { next(error); }
+});
+
 module.exports = router;

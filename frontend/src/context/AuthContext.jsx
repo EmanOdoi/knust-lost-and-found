@@ -34,6 +34,12 @@ export function AuthProvider({ children }) {
     return res.data.user;
   }
 
+  async function updateProfile(fields) {
+    const res = await api.patch("/auth/me", fields);
+    setUser(res.data.user);
+    return res.data.user;
+  }
+
   function logout() {
     localStorage.removeItem("lf_token");
     setUser(null);
@@ -62,6 +68,7 @@ export function AuthProvider({ children }) {
         login,
         register,
         logout,
+        updateProfile,
         forgotPassword,
         verifyResetCode,
         resetPassword,

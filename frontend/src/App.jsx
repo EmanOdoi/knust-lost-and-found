@@ -10,6 +10,7 @@ import ResetNewPassword from "./pages/ResetNewPassword";
 import ReportItem from "./pages/ReportItem";
 import ItemDetail from "./pages/ItemDetail";
 import MyReports from "./pages/MyReports";
+import Profile from "./pages/Profile";
 import AdminDashboard from "./pages/AdminDashboard";
 import { RequireAuth, RequireAdmin } from "./components/RouteGuards";
 
@@ -29,6 +30,7 @@ export default function App() {
           <Route path="/items/:id" element={<ItemDetail />} />
           <Route path="/report" element={<RequireAuth><ReportItem /></RequireAuth>} />
           <Route path="/my-reports" element={<RequireAuth><MyReports /></RequireAuth>} />
+          <Route path="/profile" element={<RequireAuth><Profile /></RequireAuth>} />
           <Route path="/admin" element={<RequireAdmin><AdminDashboard /></RequireAdmin>} />
         </Routes>
       </main>

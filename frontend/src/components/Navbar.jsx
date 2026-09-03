@@ -49,7 +49,9 @@ export default function Navbar() {
         <div className="flex items-center gap-3">
           {user ? (
             <>
-              <span className="hidden sm:inline text-sm text-white/80">Hi, {user.name.split(" ")[0]}</span>
+              <Link to="/profile" className="hidden sm:inline text-sm text-white/80 hover:text-white transition">
+                Hi, {user.name.split(" ")[0]}
+              </Link>
               <motion.button whileTap={{ scale: 0.95 }} onClick={handleLogout} className="text-sm font-medium bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-sm transition">
                 Log out
               </motion.button>
@@ -70,11 +72,12 @@ export default function Navbar() {
       </header>
 
       {user && (
-        <nav className="sm:hidden fixed inset-x-0 bottom-0 z-40 grid grid-cols-4 border-t border-line bg-white/95 px-3 py-2 shadow-lg backdrop-blur">
+        <nav className="sm:hidden fixed inset-x-0 bottom-0 z-40 grid grid-cols-5 border-t border-line bg-white/95 px-3 py-2 shadow-lg backdrop-blur">
           <BottomNavButton to="/" active={location.pathname === "/"} icon="home">Home</BottomNavButton>
           <BottomNavButton to="/browse" active={location.pathname === "/browse"} icon="browse">Browse</BottomNavButton>
           <BottomNavButton to="/report" active={location.pathname === "/report"} icon="report">Report</BottomNavButton>
           <BottomNavButton to="/my-reports" active={location.pathname === "/my-reports"} icon="mine">Mine</BottomNavButton>
+          <BottomNavButton to="/profile" active={location.pathname === "/profile"} icon="profile">Profile</BottomNavButton>
         </nav>
       )}
     </>
@@ -139,6 +142,15 @@ function BottomNavIcon({ name }) {
       <svg {...commonProps}>
         <path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z" />
         <path d="M9 21v-6h6v6" />
+      </svg>
+    );
+  }
+
+  if (name === "profile") {
+    return (
+      <svg {...commonProps}>
+        <circle cx="12" cy="12" r="3" />
+        <path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1" />
       </svg>
     );
   }
